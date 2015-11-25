@@ -212,7 +212,7 @@ public class Main implements AdmwlOnJobFinishedListener<ComputationResult>,Admwl
 
                 ProcessBuilder pb = new ProcessBuilder(
                         "java",
-                        "-Djava.security.policy="+path+"/../java.policy",
+                        "-Djava.security.policy="+path+"/../../java.policy",
                         "-jar",
                         f.getAbsolutePath(),
                         "--worker");
