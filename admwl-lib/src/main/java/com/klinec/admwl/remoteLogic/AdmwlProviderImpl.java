@@ -37,7 +37,7 @@ public class AdmwlProviderImpl<Result> implements AdmwlProvider<Result> {
     /**
      * Map of registered workers.
      */
-    private final Map<String, AdmwlWorker<Result>> workers = new ConcurrentHashMap<>();
+    private final Map<String, AdmwlWorker<Result>> workers = new ConcurrentHashMap<String, AdmwlWorker<Result>>();
 
     /**
      * Binary atomic flag determining if manager is still running.
@@ -47,7 +47,7 @@ public class AdmwlProviderImpl<Result> implements AdmwlProvider<Result> {
     /**
      * Concurrent queue of jobs to be executed by workers.
      */
-    private final Queue<AdmwlTask<Result>> jobQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<AdmwlTask<Result>> jobQueue = new ConcurrentLinkedQueue<AdmwlTask<Result>>();
 
     /**
      * Jobs finished listener.
