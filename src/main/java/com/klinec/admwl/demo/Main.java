@@ -9,6 +9,8 @@ import org.kohsuke.args4j.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
@@ -31,6 +33,10 @@ public class Main implements AdmwlOnJobFinishedListener<ComputationResult>,Admwl
 
     @Option(name="--worker", aliases={"-w"}, usage = "Start application in the RMI worker mode")
     private boolean workerMode = false;
+
+    @Option(name="--worker-spawn", aliases={"-n"}, usage = "Number of workers to be spawned with the manager process. " +
+            "Use only to start additional workers automatically with manager. Ignored in worker case.")
+    private int workerSpawn = 0;
 
     @Option(name="--threads", aliases={"-t"}, usage = "Thread count for worker process.")
     private int threads = 1;
@@ -165,6 +171,9 @@ public class Main implements AdmwlOnJobFinishedListener<ComputationResult>,Admwl
         manager.setJobCancelCheckListener(this);
         manager.initServer();
 
+        // Spawn additional workers?
+        spawnWorkers();
+
         // Add some computation jobs.
         taskToProcess.set(0);
         taskProcessed.set(0);
@@ -182,6 +191,38 @@ public class Main implements AdmwlOnJobFinishedListener<ComputationResult>,Admwl
         // Finished, shutdown workers.
         manager.shutdown();
         registry.shutdown();
+    }
+
+    /**
+     * Spawn additional workers if enabled in options.
+     */
+    private void spawnWorkers(){
+        if (workerSpawn <= 0){
+            return;
+        }
+
+        final File f = new File(System.getProperty("java.class.path"));
+        final File dir = f.getAbsoluteFile().getParentFile();
+        final String path = dir.toString();
+        logger.info("Class path {}", path);
+
+        for (int i = 0; i < workerSpawn; i++) {
+            try {
+                logger.info("Starting worker process {}/{}", i+1, workerSpawn);
+
+                ProcessBuilder pb = new ProcessBuilder(
+                        "java",
+                        "-Djava.security.policy="+path+"/../java.policy",
+                        "-jar",
+                        f.getAbsolutePath(),
+                        "--worker");
+
+                Process p = pb.start();
+
+            } catch (Exception e) {
+                logger.error("Exception in starting a worker", e);
+            }
+        }
     }
 
     /**
