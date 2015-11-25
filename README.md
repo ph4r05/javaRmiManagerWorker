@@ -22,3 +22,19 @@ Each worker generates unique UUID after initialization. Under this UUID it is re
 In order to test the code, use provided shell scripts to start one manager first. Then start multiple worker processes.
 As manager finishes its work, it terminates all worker processes.
 
+## Maven repository
+This library is in the process of being submitted to Maven Central Repository.
+As soon as it gets finished the maven configuration for the library will be published here.
+
+## Maven project structure
+Main repository contains simple parent maven project which includes two sub-modules.
+  
+### Library
+ Main maven project with the library itself. It is a lightweight project with only dependency - SLF4J. This maven project
+ is about to be submitted to the Maven Central Repository so you can use it in your projects.
+ 
+### Demo
+ Maven project including library project, with Main method. Illustrates usage of the library and demonstrates a simple 
+ example of usage. Contains another dependencies. This repository is intended to be only illustrative, not present in the 
+ Maven Central Repository.
+
