@@ -1,5 +1,6 @@
 package com.klinec.admwl.remoteInterface;
 
+import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -13,7 +14,7 @@ import java.rmi.RemoteException;
  *
  * Created by dusanklinec on 15.11.15.
  */
-public interface AdmwlProvider<T> extends Remote {
+public interface AdmwlProvider<Result> extends Remote {
     /**
      * Worker machines connected to the job provider server pull a new job using this method from the job queue.
      * If no job is currently in the work queue, null is returned.
@@ -25,7 +26,7 @@ public interface AdmwlProvider<T> extends Remote {
      * @return A new task to be executed.
      * @throws RemoteException
      */
-    AdmwlTask<T> getNewJob(String workerId, long timeout) throws RemoteException;
+    AdmwlTask<Result> getNewJob(String workerId, long timeout) throws RemoteException;
 
     /**
      * Worker calls this method when computation is finished.
@@ -33,7 +34,7 @@ public interface AdmwlProvider<T> extends Remote {
      * @param admwlTask  task that was finished
      * @param jobResult result of the task
      */
-    void jobFinished(String workerId, AdmwlTask<T> admwlTask, T jobResult) throws RemoteException;
+    void jobFinished(String workerId, AdmwlTask<Result> admwlTask, Result jobResult) throws RemoteException;
 
     /**
      * New worker machine registers itself to a job provider.
@@ -42,7 +43,7 @@ public interface AdmwlProvider<T> extends Remote {
      * @param workerId worker string identifier, UUID
      * @throws RemoteException
      */
-    void registerWorker(String workerId, AdmwlWorker<T> workerCallback) throws RemoteException;
+    void registerWorker(String workerId, AdmwlWorker<Result> workerCallback) throws RemoteException;
 
     /**
      * Worker is disconnecting from work queue.

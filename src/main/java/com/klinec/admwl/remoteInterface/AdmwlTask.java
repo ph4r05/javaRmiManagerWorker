@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * Created by dusanklinec on 15.11.15.
  */
-public interface AdmwlTask<T> extends Serializable {
+public interface AdmwlTask<Result> extends Serializable {
     /**
      * Returns unique task identifier UUID.
      * @return task UUID.
@@ -21,5 +21,5 @@ public interface AdmwlTask<T> extends Serializable {
      * Main work method;
      * @return task computation result.
      */
-    T execute(AdmwlCancellation cancellation, AdmwlProgressMonitor progress);
+    Result execute(AdmwlCancellation cancellation, AdmwlProgressMonitor progress);
 }

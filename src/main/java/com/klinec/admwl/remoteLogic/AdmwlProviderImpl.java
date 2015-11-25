@@ -9,7 +9,7 @@ import com.klinec.admwl.remoteInterface.AdmwlWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.rmi.NoSuchObjectException;
+import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Simple worker provider implementation
  * Created by dusanklinec on 15.11.15.
  */
-public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
+public class AdmwlProviderImpl<Result> implements AdmwlProvider<Result> {
     private static final Logger logger = LoggerFactory.getLogger(AdmwlProviderImpl.class);
     private static final long serialVersionUID = 1L;
 
@@ -37,7 +37,7 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
     /**
      * Map of registered workers.
      */
-    private final Map<String, AdmwlWorker<T>> workers = new ConcurrentHashMap<>();
+    private final Map<String, AdmwlWorker<Result>> workers = new ConcurrentHashMap<>();
 
     /**
      * Binary atomic flag determining if manager is still running.
@@ -47,14 +47,14 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
     /**
      * Concurrent queue of jobs to be executed by workers.
      */
-    private final Queue<AdmwlTask<T>> jobQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<AdmwlTask<Result>> jobQueue = new ConcurrentLinkedQueue<>();
 
     /**
      * Jobs finished listener.
      */
-    private AdmwlOnJobFinishedListener<T> jobFinishedListener;
-    private AdmwlOnJobProgressListener<T> jobProgressListener;
-    private AdmwlOnJobCancelCheckListener<T> jobCancelCheckListener;
+    private AdmwlOnJobFinishedListener<Result> jobFinishedListener;
+    private AdmwlOnJobProgressListener<Result> jobProgressListener;
+    private AdmwlOnJobCancelCheckListener<Result> jobCancelCheckListener;
 
     /**
      * Registry to be used for binding.
@@ -69,7 +69,7 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
     /**
      * Stub being used for export.
      */
-    private AdmwlProvider<T> stub;
+    private AdmwlProvider<Result> stub;
 
     /**
      * If true job enqueue is permitted if there is no worker available, otherwise
@@ -89,7 +89,7 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
             System.setSecurityManager(new SecurityManager());
         }
 
-        stub = (AdmwlProvider<T>) UnicastRemoteObject.exportObject(this, 0);
+        stub = (AdmwlProvider<Result>) UnicastRemoteObject.exportObject(this, 0);
 
         // Starting our own registry so it has class definitions of our classes.
         // Starting a new registry may need to allow it on the local firewall
@@ -116,9 +116,9 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
         }
 
         List<String> keysToRemove = new ArrayList<String>(workers.size());
-        for (Map.Entry<String, AdmwlWorker<T>> workerEntry : workers.entrySet()) {
+        for (Map.Entry<String, AdmwlWorker<Result>> workerEntry : workers.entrySet()) {
             final String workerKey = workerEntry.getKey();
-            final AdmwlWorker<T> worker = workerEntry.getValue();
+            final AdmwlWorker<Result> worker = workerEntry.getValue();
 
             boolean works = true;
             try {
@@ -146,7 +146,7 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
     /**
      * Adds computation job to the queue
      */
-    public void enqueueJob(AdmwlTask<T> job){
+    public void enqueueJob(AdmwlTask<Result> job){
         if (!isRunning.get()){
             logger.info("System could not accept a new job as it is terminated");
             return;
@@ -177,10 +177,10 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
      * Terminates all connected workers.
      */
     public void shutdown(){
-        for (Map.Entry<String, AdmwlWorker<T>> workerEntry : workers.entrySet()) {
+        for (Map.Entry<String, AdmwlWorker<Result>> workerEntry : workers.entrySet()) {
             try {
                 logger.info("Shutting down worker {}", workerEntry.getKey());
-                workerEntry.getValue().shutdown();
+                workerEntry.getValue().shutdown(true);
 
             } catch (RemoteException e) {
                 logger.error("Exception when shutting down worker " + workerEntry.getKey(), e);
@@ -211,7 +211,7 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
     }
 
     @Override
-    public AdmwlTask<T> getNewJob(String workerId, long timeout) throws RemoteException {
+    public AdmwlTask<Result> getNewJob(String workerId, long timeout) throws RemoteException {
         if (!isRunning.get()){
             return null;
         }
@@ -220,7 +220,7 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
     }
 
     @Override
-    public void jobFinished(String workerId, AdmwlTask<T> admwlTask, T jobResult) throws RemoteException {
+    public void jobFinished(String workerId, AdmwlTask<Result> admwlTask, Result jobResult) throws RemoteException {
         logger.info("Job has finished");
         if (jobFinishedListener == null){
             logger.error("Job finished listener is null");
@@ -231,7 +231,7 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
     }
 
     @Override
-    public void registerWorker(String workerId, AdmwlWorker<T> workerCallback) throws RemoteException {
+    public void registerWorker(String workerId, AdmwlWorker<Result> workerCallback) throws RemoteException {
         logger.info("Registering worker {}", workerId);
         workers.put(workerId, workerCallback);
     }
@@ -290,27 +290,27 @@ public class AdmwlProviderImpl<T> implements AdmwlProvider<T> {
         return false;
     }
 
-    public AdmwlOnJobFinishedListener<T> getJobFinishedListener() {
+    public AdmwlOnJobFinishedListener<Result> getJobFinishedListener() {
         return jobFinishedListener;
     }
 
-    public void setJobFinishedListener(AdmwlOnJobFinishedListener<T> jobFinishedListener) {
+    public void setJobFinishedListener(AdmwlOnJobFinishedListener<Result> jobFinishedListener) {
         this.jobFinishedListener = jobFinishedListener;
     }
 
-    public AdmwlOnJobProgressListener<T> getJobProgressListener() {
+    public AdmwlOnJobProgressListener<Result> getJobProgressListener() {
         return jobProgressListener;
     }
 
-    public void setJobProgressListener(AdmwlOnJobProgressListener<T> jobProgressListener) {
+    public void setJobProgressListener(AdmwlOnJobProgressListener<Result> jobProgressListener) {
         this.jobProgressListener = jobProgressListener;
     }
 
-    public AdmwlOnJobCancelCheckListener<T> getJobCancelCheckListener() {
+    public AdmwlOnJobCancelCheckListener<Result> getJobCancelCheckListener() {
         return jobCancelCheckListener;
     }
 
-    public void setJobCancelCheckListener(AdmwlOnJobCancelCheckListener<T> jobCancelCheckListener) {
+    public void setJobCancelCheckListener(AdmwlOnJobCancelCheckListener<Result> jobCancelCheckListener) {
         this.jobCancelCheckListener = jobCancelCheckListener;
     }
 

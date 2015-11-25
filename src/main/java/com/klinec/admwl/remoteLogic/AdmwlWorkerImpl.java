@@ -8,6 +8,7 @@ import com.klinec.admwl.remoteInterface.AdmwlWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
@@ -22,7 +23,7 @@ import static java.util.concurrent.TimeUnit.DAYS;
  * Simple implementation by
  * Created by dusanklinec on 15.11.15.
  */
-public class AdmwlWorkerImpl<T> implements AdmwlWorker<T> {
+public class AdmwlWorkerImpl<Result> implements AdmwlWorker<Result> {
     private static final Logger logger = LoggerFactory.getLogger(AdmwlWorkerImpl.class);
     private static final long serialVersionUID = 1L;
 
@@ -30,7 +31,7 @@ public class AdmwlWorkerImpl<T> implements AdmwlWorker<T> {
      * Adml provider from RMI.
      * Looked up via RMI service, calls getJob on it.
      */
-    private AdmwlProvider<T> provider;
+    private AdmwlProvider<Result> provider;
 
     /**
      * Our worker ID.
@@ -76,7 +77,7 @@ public class AdmwlWorkerImpl<T> implements AdmwlWorker<T> {
         }
 
         //Get a reference to the remote server on this machine
-        provider = (AdmwlProvider<T>) Naming.lookup(connectURL);
+        provider = (AdmwlProvider<Result>) Naming.lookup(connectURL);
         logger.info("Provider looked up successfully");
 
         // Register to the manager.
@@ -146,7 +147,7 @@ public class AdmwlWorkerImpl<T> implements AdmwlWorker<T> {
                     break;
                 }
 
-                final AdmwlTask<T> job = provider.getNewJob(workerId, 1000);
+                final AdmwlTask<Result> job = provider.getNewJob(workerId, 1000);
                 if (job == null) {
                     continue;
                 }
@@ -178,7 +179,7 @@ public class AdmwlWorkerImpl<T> implements AdmwlWorker<T> {
                     }
                 };
 
-                T result = null;
+                Result result = null;
                 try {
                     logger.info("<job name={}>", taskId);
                     result = job.execute(cancellation, progress);
@@ -206,7 +207,7 @@ public class AdmwlWorkerImpl<T> implements AdmwlWorker<T> {
     }
 
     @Override
-    public T executeTask(AdmwlTask<T> t) throws RemoteException {
+    public Result executeTask(AdmwlTask<Result> t) throws RemoteException {
         // TODO: implement
         return null;
     }
@@ -218,13 +219,13 @@ public class AdmwlWorkerImpl<T> implements AdmwlWorker<T> {
     }
 
     @Override
-    public String cancelTask() throws RemoteException {
-        // TODO: implement
+    public String cancelTask(String taskId) throws RemoteException {
+        // TODO: implement with cancellation signal for each task being executed. Save bandwidth with regular isCancelled requests.
         return null;
     }
 
     @Override
-    public void shutdown() throws RemoteException {
+    public void shutdown(boolean cancelRunning) throws RemoteException {
         isRunning.set(false);
         logger.info("Shutting down worker {}", workerId);
     }

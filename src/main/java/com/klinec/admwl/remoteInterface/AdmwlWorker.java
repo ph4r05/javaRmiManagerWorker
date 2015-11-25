@@ -1,5 +1,6 @@
 package com.klinec.admwl.remoteInterface;
 
+import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -10,7 +11,7 @@ import java.rmi.RemoteException;
  *
  * Created by dusanklinec on 15.11.15.
  */
-public interface AdmwlWorker<T> extends Remote {
+public interface AdmwlWorker<Result> extends Remote {
 
     /**
      * Returns worker unique identifier UUID.
@@ -26,7 +27,7 @@ public interface AdmwlWorker<T> extends Remote {
      * @return
      * @throws RemoteException
      */
-     T executeTask(AdmwlTask<T> t) throws RemoteException;
+     Result executeTask(AdmwlTask<Result> t) throws RemoteException;
 
     /**
      * Tests availability of the client.
@@ -41,15 +42,17 @@ public interface AdmwlWorker<T> extends Remote {
      * Cancels task being executed.
      * Returns task-id of the cancelled task or null if nothing was cancelled.
      *
+     * @param taskId task identifier to cancel. If null, cancells all tasks being executed at the moment.
      * @throws RemoteException
      */
-    String cancelTask() throws RemoteException;
+    String cancelTask(String taskId) throws RemoteException;
 
     /**
      * Worker should shut down after provider calls this method.
      *
+     * @param cancelRunning if true cancels all currently running tasks. Task need to support cancellation mechanism.
      * @throws RemoteException
      */
-    void shutdown() throws RemoteException;
+    void shutdown(boolean cancelRunning) throws RemoteException;
 
 }
