@@ -23,14 +23,21 @@ In order to test the code, use provided shell scripts to start one manager first
 As manager finishes its work, it terminates all worker processes.
 
 ## Maven repository
-This library is in the process of being submitted to Maven Central Repository.
-As soon as it gets finished the maven configuration for the library will be published here.
+```xml
+<dependency>
+  <groupId>com.klinec</groupId>
+  <artifactId>admwl</artifactId>
+  <version>1.0</version>
+</dependency>
+```
 
 ## Maven project structure
 Main repository contains simple parent maven project which includes two sub-modules.
+* Library
+* Demo
   
 ### Library
- Main maven project with the library itself. It is a lightweight project with only dependency - SLF4J. This maven project
+ Main maven project with the library itself. It is a lightweight project with only dependency - *SLF4J*. This maven project
  is about to be submitted to the Maven Central Repository so you can use it in your projects.
  
 ### Demo
