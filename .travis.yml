@@ -1,2 +1,17 @@
 language: java
 script: mvn install
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "Y4KoljcRW96paKNUTD75KgODE3/v8DGI4oBF7YEj1Zb8DyJgbE+Q5VZUhaLME48fkCSfhKqguHj7FyU8ExC7zdADXh3LMXprkPViKPAG3FD2S/p5S+h9P+spWowz8lUrd52TKsvlj8cKawCOLpYF5VSpOkwXeVA8zsLzXa20/uzGDNN8xGo6hrvAPGg6GnZRof9ltDl7kzqIFs7y0w6HOHryfD/Dw5tkLxyjy91xZ6xZDnP9pn3U/fBfLMe2mtsXVadpevANb2qV93Dr41o0teJQMeSQH/MIBbVkUhFRhJ13fnEiKrxNCIPSH3vQmX9SpPzCgitMsIR4QZ80qXZvebnU+7KEaqKoQPhQgKB+8isAiX6K5Acrs1SYziN7eh0kM81/OJ2f7QeZdx1zK2flOeumX1S8wkVfvG+52RhS6p/QrE6hDysbWxMufRi60dktX4bFnjIod04W8UHbJlO/2v0BtFpjKqpapYx2NcGJf+zO3TCM4A7UUPuryeGCLli+/7CLrXOt1qmOwbpzG7/Jnwrygvtwniqbd0c/XKlgnlO913507uTgw4BeT9/68hHs53KJCSaCxllFiVe4IDAraukS/wQTDBSLaZI3WmHTymNuBFBe1GVrFmdeTaACpRg8yC1/jPijgi5knxOju0R+hotQx4yvcACPKybWKuf9bCw="
+
+addons:
+  coverity_scan:
+    project:
+      name: "ph4r05/javaRmiManagerWorker"
+      description: "RMI Manager worker implementation"
+    notification_email: ph4r05@gmail.com
+    build_command:   mvn install
+    branch_pattern: coverity_scan
