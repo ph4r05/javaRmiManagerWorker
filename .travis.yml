@@ -15,3 +15,4 @@ addons:
     notification_email: ph4r05@gmail.com
     build_command:   mvn install
     branch_pattern: coverity_scan
+
