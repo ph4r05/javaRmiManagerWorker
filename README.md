@@ -2,6 +2,7 @@
 Java RMI manager worker implementation for computation parallelization across multiple computers.
 
 [![Build Status](https://travis-ci.org/ph4r05/javaRmiManagerWorker.svg?branch=master)](https://travis-ci.org/ph4r05/javaRmiManagerWorker)
+[![Coverity Status](https://scan.coverity.com/projects/7182/badge.svg)](https://scan.coverity.com/projects/ph4r05-javarmimanagerworker)
 
 ## Description
 Java Remote Method Invocation is used for communication between manager and worker processes.

@@ -13,6 +13,7 @@ addons:
       name: "ph4r05/javaRmiManagerWorker"
       description: "RMI Manager worker implementation"
     notification_email: ph4r05@gmail.com
-    build_command:   mvn install
+    build_command_prepend: "mvn clean"
+    build_command:   "mvn -DskipTests=true compile"
     branch_pattern: coverity_scan
 
